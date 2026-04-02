@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { personas } from "@/constants/personas";
@@ -54,19 +55,19 @@ const InterviewForm = ({ userId }: { userId: string }) => {
           techstack: data.techstack,
           amount: data.amount,
           userid: userId,
+          persona: data.persona,
         }),
       });
 
       const result = await response.json();
       if (result.success && result.interviewId) {
-        router.push(
-          `/interview/${result.interviewId}?persona=${data.persona}`
-        );
+        toast.success("Interview created! Click the card to start.");
+        router.push("/");
       } else {
-        console.error("Failed to generate interview");
+        toast.error("Failed to generate interview. Please try again.");
       }
-    } catch (error) {
-      console.error("Error creating interview:", error);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -86,23 +87,25 @@ const InterviewForm = ({ userId }: { userId: string }) => {
             label="Job Role"
             placeholder="e.g. Frontend Developer"
           />
+
           <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="label">Experience Level</label>
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm text-light-100">Experience Level</label>
               <select
                 {...form.register("level")}
-                className="input w-full mt-1"
+                className="bg-dark-200 rounded-full min-h-12 px-5 text-white border border-input"
               >
                 <option value="Junior">Junior</option>
                 <option value="Mid">Mid-level</option>
                 <option value="Senior">Senior</option>
               </select>
             </div>
-            <div className="flex-1">
-              <label className="label">Interview Type</label>
+
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm text-light-100">Interview Type</label>
               <select
                 {...form.register("type")}
-                className="input w-full mt-1"
+                className="bg-dark-200 rounded-full min-h-12 px-5 text-white border border-input"
               >
                 <option value="Technical">Technical</option>
                 <option value="Behavioral">Behavioral</option>
@@ -110,19 +113,23 @@ const InterviewForm = ({ userId }: { userId: string }) => {
               </select>
             </div>
           </div>
+
           <FormField
             control={form.control}
             name="techstack"
             label="Tech Stack"
             placeholder="e.g. React, TypeScript, Node.js"
           />
-          <div>
-            <label className="label">Number of Questions (1–10)</label>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-light-100">
+              Number of Questions (1–10)
+            </label>
             <input
               type="number"
               min={1}
               max={10}
-              className="input w-full mt-1"
+              className="bg-dark-200 rounded-full min-h-12 px-5 text-white border border-input w-full"
               {...form.register("amount")}
             />
           </div>
@@ -130,7 +137,7 @@ const InterviewForm = ({ userId }: { userId: string }) => {
 
         {/* Persona selector */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-xl font-semibold text-white">
             Choose Your Interviewer
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -140,16 +147,20 @@ const InterviewForm = ({ userId }: { userId: string }) => {
                 type="button"
                 onClick={() => form.setValue("persona", p.id)}
                 className={cn(
-                  "card-border p-4 text-left rounded-2xl transition-all cursor-pointer",
+                  "p-4 text-left rounded-2xl border transition-all cursor-pointer",
                   selectedPersona === p.id
                     ? "border-primary-200 bg-dark-300"
-                    : "hover:bg-dark-300/50"
+                    : "border-dark-200 bg-dark-200 hover:bg-dark-300"
                 )}
               >
                 <span className="text-3xl">{p.avatar}</span>
-                <h4 className="text-white font-semibold mt-2">{p.name}</h4>
-                <p className="text-xs text-light-400 mt-1">{p.role}</p>
-                <p className="text-xs text-light-100 mt-2">{p.description}</p>
+                <h4 className="text-white font-semibold mt-2 text-base">
+                  {p.name}
+                </h4>
+                <p className="text-xs text-primary-200 mt-0.5">{p.role}</p>
+                <p className="text-xs text-light-100 mt-2 leading-relaxed">
+                  {p.description}
+                </p>
               </button>
             ))}
           </div>

@@ -4,7 +4,6 @@ import { currentUser } from "@clerk/nextjs/server";
 
 import Agent from "@/components/Agent";
 import { getRandomInterviewCover } from "@/lib/utils";
-
 import {
   getFeedbackByInterviewId,
   getInterviewById,
@@ -13,7 +12,7 @@ import DisplayTechIcons from "@/components/DisplayTechIcons";
 
 const InterviewDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
-  const { persona: personaId } = await searchParams;
+  const { persona: personaFromUrl } = await searchParams;
 
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
@@ -30,6 +29,10 @@ const InterviewDetails = async ({ params, searchParams }: RouteParams) => {
     interviewId: id,
     userId: user.id,
   });
+
+  // Prefer URL param, then interview record, then default
+  const personaId =
+    personaFromUrl || interview.persona || "older-sibling";
 
   return (
     <>
@@ -61,7 +64,7 @@ const InterviewDetails = async ({ params, searchParams }: RouteParams) => {
         type="interview"
         questions={interview.questions}
         feedbackId={feedback?.id}
-        personaId={personaId ?? "older-sibling"}
+        personaId={personaId}
       />
     </>
   );

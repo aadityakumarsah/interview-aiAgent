@@ -14,13 +14,13 @@ async function Home() {
   const clerkUser = await currentUser();
   const userId = clerkUser?.id ?? "guest";
 
-  const [userInterviews, allInterview] = await Promise.all([
+  const [userInterviews, allInterviews] = await Promise.all([
     getInterviewsByUserId(userId),
     getLatestInterviews({ userId }),
   ]);
 
   const hasPastInterviews = (userInterviews?.length ?? 0) > 0;
-  const hasUpcomingInterviews = (allInterview?.length ?? 0) > 0;
+  const hasUpcomingInterviews = (allInterviews?.length ?? 0) > 0;
 
   return (
     <>
@@ -61,10 +61,11 @@ async function Home() {
                 type={interview.type}
                 techstack={interview.techstack}
                 createdAt={interview.createdAt}
+                persona={interview.persona}
               />
             ))
           ) : (
-            <p>You have not taken any interviews yet</p>
+            <p>You haven&apos;t taken any interviews yet</p>
           )}
         </div>
       </section>
@@ -74,7 +75,7 @@ async function Home() {
 
         <div className="interviews-section">
           {hasUpcomingInterviews ? (
-            allInterview?.map((interview) => (
+            allInterviews?.map((interview) => (
               <InterviewCard
                 key={interview.id}
                 userId={userId}
@@ -83,10 +84,11 @@ async function Home() {
                 type={interview.type}
                 techstack={interview.techstack}
                 createdAt={interview.createdAt}
+                persona={interview.persona}
               />
             ))
           ) : (
-            <p>There are no interviews available</p>
+            <p>There are no other interviews available</p>
           )}
         </div>
       </section>

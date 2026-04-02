@@ -23,6 +23,7 @@ interface Interview {
   userId: string;
   type: string;
   finalized: boolean;
+  persona?: string;
 }
 
 interface CreateFeedbackParams {
@@ -45,6 +46,7 @@ interface InterviewCardProps {
   type: string;
   techstack: string[];
   createdAt?: string;
+  persona?: string;
 }
 
 interface AgentProps {
@@ -70,15 +72,6 @@ interface GetFeedbackByInterviewIdParams {
 interface GetLatestInterviewsParams {
   userId: string;
   limit?: number;
-}
-
-interface InterviewFormProps {
-  interviewId: string;
-  role: string;
-  level: string;
-  type: string;
-  techstack: string[];
-  amount: number;
 }
 
 interface TechIconProps {

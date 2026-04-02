@@ -15,13 +15,11 @@ const InterviewCard = async ({
   type,
   techstack,
   createdAt,
+  persona,
 }: InterviewCardProps) => {
   const feedback =
     userId && interviewId
-      ? await getFeedbackByInterviewId({
-          interviewId,
-          userId,
-        })
+      ? await getFeedbackByInterviewId({ interviewId, userId })
       : null;
 
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
@@ -37,6 +35,10 @@ const InterviewCard = async ({
     feedback?.createdAt || createdAt || Date.now()
   ).format("MMM D, YYYY");
 
+  const interviewHref = feedback
+    ? `/interview/${interviewId}/feedback`
+    : `/interview/${interviewId}${persona ? `?persona=${persona}` : ""}`;
+
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96">
       <div className="card-interview">
@@ -48,7 +50,7 @@ const InterviewCard = async ({
               badgeColor
             )}
           >
-            <p className="badge-text ">{normalizedType}</p>
+            <p className="badge-text">{normalizedType}</p>
           </div>
 
           {/* Cover Image */}
@@ -57,7 +59,7 @@ const InterviewCard = async ({
             alt="cover-image"
             width={90}
             height={90}
-            className="rounded-full object-fit size-[90px]"
+            className="rounded-full object-cover size-[90px]"
           />
 
           {/* Interview Role */}
@@ -66,12 +68,7 @@ const InterviewCard = async ({
           {/* Date & Score */}
           <div className="flex flex-row gap-5 mt-3">
             <div className="flex flex-row gap-2">
-              <Image
-                src="/calendar.svg"
-                width={22}
-                height={22}
-                alt="calendar"
-              />
+              <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
               <p>{formattedDate}</p>
             </div>
 
@@ -81,7 +78,7 @@ const InterviewCard = async ({
             </div>
           </div>
 
-          {/* Feedback or Placeholder Text */}
+          {/* Feedback or Placeholder */}
           <p className="line-clamp-2 mt-5">
             {feedback?.finalAssessment ||
               "You haven't taken this interview yet. Take it now to improve your skills."}
@@ -92,14 +89,8 @@ const InterviewCard = async ({
           <DisplayTechIcons techStack={techstack} />
 
           <Button className="btn-primary">
-            <Link
-              href={
-                feedback
-                  ? `/interview/${interviewId}/feedback`
-                  : `/interview/${interviewId}`
-              }
-            >
-              {feedback ? "Check Feedback" : "View Interview"}
+            <Link href={interviewHref}>
+              {feedback ? "Check Feedback" : "Start Interview"}
             </Link>
           </Button>
         </div>

@@ -1,5 +1,4 @@
-// Mock database to replace Firebase
-// This stores data in memory for development purposes
+// In-memory database — stored on globalThis so it survives Next.js hot-reloads
 
 interface Interview {
   id: string;
@@ -12,6 +11,7 @@ interface Interview {
   type: string;
   finalized: boolean;
   coverImage?: string;
+  persona?: string;
 }
 
 interface Feedback {
@@ -30,11 +30,18 @@ interface Feedback {
   createdAt: string;
 }
 
-// In-memory storage
-const interviews: Map<string, Interview> = new Map();
-const feedbacks: Map<string, Feedback> = new Map();
+// Use globalThis so hot-reload doesn't wipe the Maps
+const g = globalThis as typeof globalThis & {
+  _interviews?: Map<string, Interview>;
+  _feedbacks?: Map<string, Feedback>;
+};
 
-// Generate unique ID
+if (!g._interviews) g._interviews = new Map<string, Interview>();
+if (!g._feedbacks) g._feedbacks = new Map<string, Feedback>();
+
+const interviews = g._interviews;
+const feedbacks = g._feedbacks;
+
 function generateId(): string {
   return (
     Math.random().toString(36).substring(2, 15) +
@@ -42,7 +49,6 @@ function generateId(): string {
   );
 }
 
-// Interview operations
 export const interviewDb = {
   add: async (interview: Omit<Interview, "id">): Promise<{ id: string }> => {
     const id = generateId();
@@ -56,19 +62,16 @@ export const interviewDb = {
 
   getByUserId: async (userId: string): Promise<Interview[]> => {
     return Array.from(interviews.values())
-      .filter((interview) => interview.userId === userId)
+      .filter((i) => i.userId === userId)
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
   },
 
-  getLatest: async (
-    userId: string,
-    limit: number = 20
-  ): Promise<Interview[]> => {
+  getLatest: async (userId: string, limit = 20): Promise<Interview[]> => {
     return Array.from(interviews.values())
-      .filter((interview) => interview.finalized && interview.userId !== userId)
+      .filter((i) => i.finalized && i.userId !== userId)
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -76,15 +79,11 @@ export const interviewDb = {
       .slice(0, limit);
   },
 
-  getAll: async (): Promise<Interview[]> => {
-    return Array.from(interviews.values());
-  },
+  getAll: async (): Promise<Interview[]> => Array.from(interviews.values()),
 
   update: async (id: string, data: Partial<Interview>): Promise<void> => {
-    const interview = interviews.get(id);
-    if (interview) {
-      interviews.set(id, { ...interview, ...data });
-    }
+    const item = interviews.get(id);
+    if (item) interviews.set(id, { ...item, ...data });
   },
 
   delete: async (id: string): Promise<void> => {
@@ -92,7 +91,6 @@ export const interviewDb = {
   },
 };
 
-// Feedback operations
 export const feedbackDb = {
   add: async (feedback: Omit<Feedback, "id">): Promise<{ id: string }> => {
     const id = generateId();
@@ -110,17 +108,14 @@ export const feedbackDb = {
   ): Promise<Feedback | null> => {
     return (
       Array.from(feedbacks.values()).find(
-        (feedback) =>
-          feedback.interviewId === interviewId && feedback.userId === userId
+        (f) => f.interviewId === interviewId && f.userId === userId
       ) || null
     );
   },
 
   update: async (id: string, data: Partial<Feedback>): Promise<void> => {
-    const feedback = feedbacks.get(id);
-    if (feedback) {
-      feedbacks.set(id, { ...feedback, ...data });
-    }
+    const item = feedbacks.get(id);
+    if (item) feedbacks.set(id, { ...item, ...data });
   },
 
   delete: async (id: string): Promise<void> => {
@@ -128,5 +123,4 @@ export const feedbackDb = {
   },
 };
 
-// Export types for use in other files
 export type { Interview, Feedback };
