@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton, SignInButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const user = await currentUser();
@@ -21,7 +22,8 @@ const Layout = async ({ children }: { children: ReactNode }) => {
           <h2 className="text-primary-100">PrepWise</h2>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           {user ? (
             <UserButton
               appearance={{

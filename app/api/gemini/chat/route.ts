@@ -13,13 +13,16 @@ export async function POST(request: Request) {
       systemPrompt: string;
     };
 
+    // Gemini rejects an empty contents array — seed with a starter if needed
+    const history =
+      messages.length === 0
+        ? [{ role: "user" as const, content: "Please begin the interview." }]
+        : messages.map((m) => ({ role: m.role, content: m.content }));
+
     const { text } = await generateText({
       model: google("gemini-flash-latest"),
       system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
+      messages: history,
     });
 
     return Response.json({ text }, { status: 200 });

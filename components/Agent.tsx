@@ -59,6 +59,7 @@ const Agent = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [availableVoices, setAvailableVoices] = useState<
     SpeechSynthesisVoice[]
   >([]);
@@ -99,6 +100,7 @@ const Agent = ({
     if (callStatus !== CallStatus.FINISHED) return;
 
     const run = async () => {
+      setIsGeneratingFeedback(true);
       if (type === "interview") {
         const { success, feedbackId: id } = await createFeedback({
           interviewId: interviewId!,
@@ -243,6 +245,22 @@ const Agent = ({
     window.speechSynthesis.cancel();
     setCallStatus(CallStatus.FINISHED);
   };
+
+  if (isGeneratingFeedback) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-dark-100/90 backdrop-blur-sm gap-6">
+        <div className="w-16 h-16 border-4 border-primary-200 border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h3 className="text-xl font-semibold text-primary-100">
+            Generating Your Feedback
+          </h3>
+          <p className="text-light-400 text-sm max-w-xs">
+            Analyzing your interview responses… this may take a few seconds.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
